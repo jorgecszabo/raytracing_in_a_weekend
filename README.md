@@ -1,6 +1,6 @@
 # raytracing_in_a_weekend
-RTX go brrrrrrrrrr
+Para correr el TP: `python main.py`
 
-# Requirements (Python):
+# Requisitos (Python):
 - OpenCV
 - Numpy
