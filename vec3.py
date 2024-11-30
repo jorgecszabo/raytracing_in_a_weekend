@@ -22,6 +22,11 @@ class Vec3(np.ndarray):
             return on_unit_sphere
         else:
             return -on_unit_sphere
+    def near_zero(self):
+        return np.all(self < 1e-8)
+
+    def reflect(self, n):
+        return self - 2 * np.dot(self, n) * n
 
     @classmethod
     def random(cls, min=0, max=1):
@@ -33,5 +38,3 @@ class Vec3(np.ndarray):
             lensq = p @ p
             if 1e-160 < lensq <= 1:
                 return p / np.sqrt(lensq)
-
-

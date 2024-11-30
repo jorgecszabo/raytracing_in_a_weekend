@@ -3,7 +3,7 @@ from interval import Interval
 
 class HitRecord:
     def __init__(self):
-        self.point, self.normal, self.t, self.front_face = None, None, None, None
+        self.point, self.normal, self.t, self.front_face, self.material = None, None, None, None, None
 
     def set_face_normal(self, ray, outward_normal):
         # NOTE: the parameter `outward_normal` is assumed to have unit length.

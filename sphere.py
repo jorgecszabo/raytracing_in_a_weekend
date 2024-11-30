@@ -19,9 +19,10 @@ def hit_sphere(center, radius, ray):
         return (-b - np.sqrt(discriminant)) / (2.0 * a)
 
 class Sphere(Hittable):
-    def __init__(self, center, radius):
+    def __init__(self, center, radius, material):
         self._center = center
-        self._radius = radius
+        self._radius = max(0, radius)
+        self._material = material
 
     def hit(self, ray, ray_interval, hit_record):
         original_coordinate = self._center - ray.origin
@@ -45,4 +46,5 @@ class Sphere(Hittable):
         hit_record.normal = (hit_record.point - self._center) / self._radius
         outward_normal = (hit_record.point - self._center) / self._radius
         hit_record.set_face_normal(ray, outward_normal)
+        hit_record.material = self._material
         return True, hit_record

@@ -83,8 +83,11 @@ class Camera:
         hit_record = HitRecord()
         hit_anything, hit_record = world.hit(ray, Interval(0.001, np.inf), hit_record)
         if hit_anything:
-            direction = hit_record.normal.random_on_hemisphere() + Vec3.random_unit_vector()
-            return 0.1 * self._ray_color(Ray(hit_record.point, direction), depth - 1, world)
+            did_scatter, scattered, attenuation = hit_record.material.scatter(ray, hit_record)
+            if did_scatter:
+                return attenuation * self._ray_color(scattered, depth - 1, world)
+            else:
+                Vec3([0.0, 0.0, 0.0])
         else:
             unit_direction = unit_vector(ray.direction)
             a = 0.5 * (unit_direction[1] + 1.0)
