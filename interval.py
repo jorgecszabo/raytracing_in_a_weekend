@@ -10,6 +10,9 @@ class Interval:
     def surrounds(self, x):
         return self.min < x < self.max
 
+    def clamp(self, x):
+        return np.clip(x, self.min, self.max)
+
     @classmethod
     def empty(cls):
         return cls(+np.inf, -np.inf)

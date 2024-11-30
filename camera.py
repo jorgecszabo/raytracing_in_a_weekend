@@ -5,19 +5,22 @@ from hittable import HittableList
 from sphere import Sphere
 from ray import Ray
 from color import write_color
+from vec3 import Vec3
 
 
 unit_vector = lambda v: v / np.linalg.norm(v)
 
 class Camera:
-    def __init__(self, image_width=100, aspect_ratio=1.0):
+    def __init__(self, image_width=100, aspect_ratio=1.0, samples_per_pixel=10):
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
+        self._samples_per_pixel = samples_per_pixel
         self._image_height = None
         self._center = None
         self._pixel00_loc = None
         self._pixel_delta_u = None
         self._pixel_delta_v = None
+        self._pixel_samples_scale = None
 
 
     def render(self, world):
@@ -26,32 +29,47 @@ class Camera:
 
         for j in range(self._image_height):
             for i in range(self._image_width):
-                pixel_center = self._pixel00_loc + (i * self._pixel_delta_u) + (j * self._pixel_delta_v)
-                ray_direction = pixel_center - self._center
-                ray = Ray(self._center, ray_direction)
-                image[i, j] = write_color(self._ray_color(ray, world))
+                pixel_color = np.zeros(3)
+                for sample in range(self._samples_per_pixel):
+                    ray = self._get_ray(i, j)
+                    pixel_color += self._ray_color(ray, world)
+                pixel_color *= self._pixel_samples_scale
+                image[i, j] = write_color(pixel_color)
 
         return image
 
+
+    def _get_ray(self, i, j):
+        offset = Vec3([np.random.rand() - 0.5, np.random.rand() - 0.5, 0.0])
+        pixel_sample = (
+            self._pixel00_loc +
+            ((i + offset[0]) * self._pixel_delta_u) +
+            ((j + offset[1]) * self._pixel_delta_v)
+        )
+        ray_origin = self._center
+        ray_direction = pixel_sample - ray_origin
+        return Ray(ray_origin, ray_direction)
 
     def _initialize(self):
         self._image_height = int(self._image_width / self._aspect_ratio)
         self._image_height = 1 if self._image_height < 1 else self._image_height
 
+        self._pixel_samples_scale = 1.0 / self._samples_per_pixel
+
         focal_length = 1
         viewport_height = 2
         viewport_width = viewport_height * (self._image_width / self._image_height)
-        self._center = np.array([0, 0, 0], np.double)
+        self._center = Vec3([0, 0, 0], np.double)
 
-        viewport_u = np.array([viewport_width, 0, 0], np.double)
-        viewport_v = np.array([0, -viewport_height, 0], np.double)
+        viewport_u = Vec3([viewport_width, 0, 0], np.double)
+        viewport_v = Vec3([0, -viewport_height, 0], np.double)
 
         self._pixel_delta_u = viewport_u / self._image_width
         self._pixel_delta_v = viewport_v / self._image_height
 
         viewport_upper_left = (
                 self._center -
-                np.array([0, 0, focal_length], np.double) -
+                Vec3([0, 0, focal_length], np.double) -
                 viewport_u / 2 -
                 viewport_v / 2
         )
@@ -62,8 +80,8 @@ class Camera:
         hit_record = HitRecord()
         hit_anything, hit_record = world.hit(ray, Interval(0, np.inf), hit_record)
         if hit_anything:
-            return 0.5 * (hit_record.normal + np.array([1.0, 1.0, 1.0]))
+            return 0.5 * (hit_record.normal + Vec3([1.0, 1.0, 1.0]))
         else:
             unit_direction = unit_vector(ray.direction)
             a = 0.5 * (unit_direction[1] + 1.0)
-            return (1.0 - a) * np.array([1.0, 1.0, 1.0]) + a * np.array([0.5, 0.7, 1.0])
+            return (1.0 - a) * Vec3([1.0, 1.0, 1.0]) + a * Vec3([0.5, 0.7, 1.0])

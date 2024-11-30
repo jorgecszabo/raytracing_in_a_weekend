@@ -10,7 +10,7 @@ def main():
     world.add(Sphere(np.array([0.0, 0.0, -1.0]), 0.5))
     world.add(Sphere(np.array([0.0, -100.5, -1.0]), 100))
 
-    camera = Camera(image_width=600, aspect_ratio=16.0 / 9.0)
+    camera = Camera(image_width=200, aspect_ratio=16.0 / 9.0, samples_per_pixel=10)
 
     t0 = time.monotonic()
     image = camera.render(world)
