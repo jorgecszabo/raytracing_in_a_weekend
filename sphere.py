@@ -23,7 +23,7 @@ class Sphere(Hittable):
         self._center = center
         self._radius = radius
 
-    def hit(self, ray, ray_tmin, ray_tmax, hit_record):
+    def hit(self, ray, ray_interval, hit_record):
         original_coordinate = self._center - ray.origin
         a = ray.direction @ ray.direction
         h = ray.direction @ original_coordinate
@@ -35,9 +35,9 @@ class Sphere(Hittable):
 
         discriminant_sqrt = np.sqrt(discriminant)
         root = (h - discriminant_sqrt) / a
-        if root <= ray_tmin or ray_tmax <= root:
+        if not ray_interval.surrounds(root):
             root = (h + discriminant_sqrt) / a
-            if root <= ray_tmin or ray_tmax <= root:
+            if not ray_interval.surrounds(root):
                 return False, hit_record
 
         hit_record.t = root

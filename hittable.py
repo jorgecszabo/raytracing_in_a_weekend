@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from interval import Interval
 
 class HitRecord:
     def __init__(self):
@@ -12,7 +13,7 @@ class HitRecord:
 class Hittable(ABC):
 
     @abstractmethod
-    def hit(self, ray, ray_tmin, ray_tmax, hit_record):
+    def hit(self, ray, ray_interval, hit_record):
         pass
 
 class HittableList(Hittable):
@@ -25,13 +26,14 @@ class HittableList(Hittable):
     def clear(self):
         self._objects.clear()
 
-    def hit(self, ray, ray_tmin, ray_tmax, hit_record):
+    def hit(self, ray, ray_interval, hit_record):
         temp_hit_record = HitRecord()
         hit_anything = False
-        closest_so_far = ray_tmax
+        closest_so_far = ray_interval.max
 
         for object in self._objects:
-            currently_hit, temp_hit_record = object.hit(ray, ray_tmin, closest_so_far, temp_hit_record)
+            new_interval = Interval(ray_interval.min, closest_so_far)
+            currently_hit, temp_hit_record = object.hit(ray, new_interval, temp_hit_record)
             if currently_hit:
                 hit_anything = True
                 closest_so_far = temp_hit_record.t
