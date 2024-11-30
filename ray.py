@@ -1,7 +1,5 @@
 import numpy as np
-from sphere import DoesNotHitSpere, hit_sphere
-from hittable import HitRecord
-from interval import Interval
+from vec3 import Vec3
 
 class Ray:
     def __init__(self, origin: np.ndarray, direction: np.ndarray):
@@ -18,9 +16,9 @@ def ray_color(ray, world):
     hit_record = HitRecord()
     hit_anything, hit_record = world.hit(ray, Interval(0, np.inf), hit_record)
     if hit_anything:
-        return 0.5 * (hit_record.normal + np.array([1.0, 1.0, 1.0]))
+        return 0.5 * (hit_record.normal + Vec3([1.0, 1.0, 1.0]))
     else:
         unit_direction = unit_vector(ray.direction)
         a = 0.5 * (unit_direction[1] + 1.0)
-        return (1.0 - a) * np.array([1.0, 1.0, 1.0]) + a * np.array([0.5, 0.7, 1.0])
+        return (1.0 - a) * Vec3([1.0, 1.0, 1.0]) + a * Vec3([0.5, 0.7, 1.0])
 """

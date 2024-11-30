@@ -11,10 +11,11 @@ from vec3 import Vec3
 unit_vector = lambda v: v / np.linalg.norm(v)
 
 class Camera:
-    def __init__(self, image_width=100, aspect_ratio=1.0, samples_per_pixel=10):
+    def __init__(self, image_width=100, aspect_ratio=1.0, samples_per_pixel=10, max_depth=10):
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
         self._samples_per_pixel = samples_per_pixel
+        self._max_depth = 10
         self._image_height = None
         self._center = None
         self._pixel00_loc = None
@@ -32,7 +33,7 @@ class Camera:
                 pixel_color = np.zeros(3)
                 for sample in range(self._samples_per_pixel):
                     ray = self._get_ray(i, j)
-                    pixel_color += self._ray_color(ray, world)
+                    pixel_color += self._ray_color(ray, self._max_depth, world)
                 pixel_color *= self._pixel_samples_scale
                 image[i, j] = write_color(pixel_color)
 
@@ -76,11 +77,14 @@ class Camera:
 
         self._pixel00_loc = viewport_upper_left + 0.5 * (self._pixel_delta_u + self._pixel_delta_v)
 
-    def _ray_color(self, ray, world):
+    def _ray_color(self, ray, depth, world):
+        if depth <= 0:
+            return Vec3([0, 0, 0])
         hit_record = HitRecord()
-        hit_anything, hit_record = world.hit(ray, Interval(0, np.inf), hit_record)
+        hit_anything, hit_record = world.hit(ray, Interval(0.001, np.inf), hit_record)
         if hit_anything:
-            return 0.5 * (hit_record.normal + Vec3([1.0, 1.0, 1.0]))
+            direction = hit_record.normal.random_on_hemisphere() + Vec3.random_unit_vector()
+            return 0.1 * self._ray_color(Ray(hit_record.point, direction), depth - 1, world)
         else:
             unit_direction = unit_vector(ray.direction)
             a = 0.5 * (unit_direction[1] + 1.0)
