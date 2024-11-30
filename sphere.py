@@ -30,18 +30,19 @@ class Sphere(Hittable):
         c = (original_coordinate @ original_coordinate) - self._radius ** 2
 
         discriminant = h ** 2 - a * c
-        if discriminant < 0: return False
+        if discriminant < 0:
+            return False, hit_record
 
-        discriminant_squared = discriminant ** 2
-        root = (h - discriminant_squared) / a
+        discriminant_sqrt = np.sqrt(discriminant)
+        root = (h - discriminant_sqrt) / a
         if root <= ray_tmin or ray_tmax <= root:
-            root = (h + discriminant_squared) / a
+            root = (h + discriminant_sqrt) / a
             if root <= ray_tmin or ray_tmax <= root:
-                return False
+                return False, hit_record
 
         hit_record.t = root
         hit_record.point = ray.at(root)
         hit_record.normal = (hit_record.point - self._center) / self._radius
         outward_normal = (hit_record.point - self._center) / self._radius
         hit_record.set_face_normal(ray, outward_normal)
-        return True
+        return True, hit_record

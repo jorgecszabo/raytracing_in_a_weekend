@@ -14,3 +14,27 @@ class Hittable(ABC):
     @abstractmethod
     def hit(self, ray, ray_tmin, ray_tmax, hit_record):
         pass
+
+class HittableList(Hittable):
+    def __init__(self):
+        self._objects = []
+
+    def add(self, object):
+        self._objects.append(object)
+
+    def clear(self):
+        self._objects.clear()
+
+    def hit(self, ray, ray_tmin, ray_tmax, hit_record):
+        temp_hit_record = HitRecord()
+        hit_anything = False
+        closest_so_far = ray_tmax
+
+        for object in self._objects:
+            currently_hit, temp_hit_record = object.hit(ray, ray_tmin, closest_so_far, temp_hit_record)
+            if currently_hit:
+                hit_anything = True
+                closest_so_far = temp_hit_record.t
+                hit_record = temp_hit_record
+
+        return hit_anything, hit_record
