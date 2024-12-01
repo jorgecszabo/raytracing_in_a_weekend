@@ -27,6 +27,7 @@ class Camera:
     def _process_row(self, j, world):
         pixel_color = np.zeros((self._image_width, 3))
         for i in range(self._image_width):
+            pixel_color = np.zeros(3)
             for sample in range(self._samples_per_pixel):
                 ray = self._get_ray(i, j)
                 pixel_color[i] += self._ray_color(ray, self._max_depth, world)

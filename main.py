@@ -7,7 +7,7 @@ from material import Lambertian, Metal
 import time
 import numpy as np
 
-def generate_spiral_points_on_sphere(radius, num_points):
+def generate_spiral_points_on_sphere(center, radius, num_points):
     points = []
     phi = np.pi * (3.0 - np.sqrt(5.0))
 
@@ -17,7 +17,7 @@ def generate_spiral_points_on_sphere(radius, num_points):
         theta = phi * i
         x = radius_at_y * np.cos(theta)
         z = radius_at_y * np.sin(theta)
-        points.append(Vec3([radius * x, radius * y, radius * z]) + Vec3([0.0, 0.0, -1.5]))
+        points.append(Vec3([radius * x, radius * y, radius * z]) + center)
 
     return points
 
@@ -25,7 +25,7 @@ def assign_material():
     choose_mat = np.random.rand()
     base = Vec3.random()
     pastel = (base + 1)*2 / 3
-    if choose_mat < 0.8:
+    if choose_mat < 0.5:
         material_lambertian = Lambertian(pastel)
         return material_lambertian
     else:
@@ -45,22 +45,36 @@ def main():
     # world.add(Sphere(Vec3([-1.0, 0.0, -1.0]), 0.5, material_left))
     # world.add(Sphere(Vec3([1.0, 0.0, -1.0]), 0.5, material_right))
 
+    #ground
     world = HittableList()
     material_ground = Metal(Vec3([0.95, 0.95, 0.96]))
-    world.add(Sphere(Vec3([0.0, -1001, -1.0]), 1000.0, material_ground))
+    world.add(Sphere(Vec3([0.0, -1001.0, -1.0]), 999.0, material_ground))
 
+    #Big sphere with smaller spheres around it
     world.add(Sphere(Vec3([0.0, 0.0, -1.5]), 0.8, Metal(Vec3([0.8, 0.81, 0.8]))))
-    points = generate_spiral_points_on_sphere(0.95, 50)
+    points = generate_spiral_points_on_sphere(Vec3([0.0, 0.0, -1.5]), 0.95, 50)
     for point in points:
         material = assign_material()
         world.add(Sphere(point, 0.1, material))
 
+    #small spheres on the ground
+    for a in range(-8, 8, 1):
+        for b in range(-8, 8, 1):
+            mat = assign_material()
+            center = Vec3([
+                a + 0.9 * np.random.rand(),
+                -1.0,
+                b + 0.9 * np.random.rand()
+            ])
+            radius = np.random.uniform(0.1, 0.3)
+            world.add(Sphere(center, radius, mat))
+
     camera = Camera(
-        image_width=800,
+        image_width=400,
         # aspect_ratio=16.0 / 9.0,
         aspect_ratio=4.0 / 3.0,
-        samples_per_pixel=15,
-        max_depth=15
+        samples_per_pixel=50,
+        max_depth=60
     )
 
     t0 = time.monotonic()
