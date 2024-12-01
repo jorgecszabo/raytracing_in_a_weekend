@@ -38,11 +38,17 @@ class Camera:
         self._initialize()
         image = np.zeros((self._image_width, self._image_height, 3))
 
-        with ProcessPoolExecutor() as executor:
-            futures = [executor.submit(self._process_row, j, world, image) for j in range(self._image_height)]
+        total_rows = self._image_height
+        num_done = 0
+        with ProcessPoolExecutor(max_workers=4) as executor:
+            futures = [executor.submit(self._process_row, j, world, image) for j in range(total_rows)]
+
             for future in futures:
                 j, row_colors = future.result()
                 image[:, j] = row_colors
+                num_done += 1
+
+                print(f"{num_done}/{total_rows} rows processed (%{int(num_done/total_rows*100)})")
 
         # for j in range(self._image_height):
         #     print(f"%{j/self._image_height*100}")
