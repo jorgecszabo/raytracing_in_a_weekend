@@ -17,7 +17,7 @@ def generate_spiral_points_on_sphere(radius, num_points):
         theta = phi * i
         x = radius_at_y * np.cos(theta)
         z = radius_at_y * np.sin(theta)
-        points.append(Vec3([radius * x, radius * y, radius * z]) + Vec3([0.0, 0.0, -1.3]))
+        points.append(Vec3([radius * x, radius * y, radius * z]) + Vec3([0.0, 0.0, -1.5]))
 
     return points
 
@@ -49,17 +49,17 @@ def main():
     material_ground = Metal(Vec3([0.95, 0.95, 0.96]))
     world.add(Sphere(Vec3([0.0, -1001, -1.0]), 1000.0, material_ground))
 
-    world.add(Sphere(Vec3([0.0, 0.0, -1.3]), 0.8, Metal(Vec3([0.8, 0.81, 0.8]))))
-    points = generate_spiral_points_on_sphere(0.9, 100)
+    world.add(Sphere(Vec3([0.0, 0.0, -1.5]), 0.8, Metal(Vec3([0.8, 0.81, 0.8]))))
+    points = generate_spiral_points_on_sphere(0.95, 50)
     for point in points:
         material = assign_material()
-        world.add(Sphere(point, 0.04, material))
+        world.add(Sphere(point, 0.1, material))
 
     camera = Camera(
-        image_width=200,
+        image_width=400,
         # aspect_ratio=16.0 / 9.0,
         aspect_ratio=4.0 / 3.0,
-        samples_per_pixel=10,
+        samples_per_pixel=15,
         max_depth=100
     )
 

@@ -40,7 +40,7 @@ class Camera:
 
         total_rows = self._image_height
         num_done = 0
-        with ProcessPoolExecutor(max_workers=4) as executor:
+        with ProcessPoolExecutor(max_workers=3) as executor:
             futures = [executor.submit(self._process_row, j, world, image) for j in range(total_rows)]
 
             for future in futures:
