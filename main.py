@@ -56,11 +56,11 @@ def main():
         world.add(Sphere(point, 0.1, material))
 
     camera = Camera(
-        image_width=400,
+        image_width=800,
         # aspect_ratio=16.0 / 9.0,
         aspect_ratio=4.0 / 3.0,
         samples_per_pixel=15,
-        max_depth=100
+        max_depth=15
     )
 
     t0 = time.monotonic()

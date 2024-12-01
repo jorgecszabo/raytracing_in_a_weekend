@@ -7,6 +7,7 @@ from ray import Ray
 from color import write_color
 from vec3 import Vec3
 from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import cpu_count
 
 unit_vector = lambda v: v / np.linalg.norm(v)
 
@@ -15,7 +16,7 @@ class Camera:
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
         self._samples_per_pixel = samples_per_pixel
-        self._max_depth = 10
+        self._max_depth = max_depth
         self._image_height = None
         self._center = None
         self._pixel00_loc = None
@@ -23,25 +24,24 @@ class Camera:
         self._pixel_delta_v = None
         self._pixel_samples_scale = None
 
-    def _process_row(self, j, world, image):
-        row_colors = []
+    def _process_row(self, j, world):
+        pixel_color = np.zeros((self._image_width, 3))
         for i in range(self._image_width):
-            pixel_color = np.zeros(3)
             for sample in range(self._samples_per_pixel):
                 ray = self._get_ray(i, j)
-                pixel_color += self._ray_color(ray, self._max_depth, world)
-            pixel_color *= self._pixel_samples_scale
-            row_colors.append(write_color(pixel_color))
-        return j, row_colors
+                pixel_color[i] += self._ray_color(ray, self._max_depth, world)
+        pixel_color *= self._pixel_samples_scale
+        pixel_color = write_color(pixel_color)
+        return j, pixel_color
 
-    def render(self, world):
+    def render(self, world, max_workers=cpu_count()):
         self._initialize()
         image = np.zeros((self._image_width, self._image_height, 3))
 
         total_rows = self._image_height
         num_done = 0
-        with ProcessPoolExecutor(max_workers=3) as executor:
-            futures = [executor.submit(self._process_row, j, world, image) for j in range(total_rows)]
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(self._process_row, j, world) for j in range(total_rows)]
 
             for future in futures:
                 j, row_colors = future.result()
