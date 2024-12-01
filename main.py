@@ -23,7 +23,7 @@ def main():
     camera = Camera(
         image_width=400,
         aspect_ratio=16.0 / 9.0,
-        samples_per_pixel=15,
+        samples_per_pixel=10,
         max_depth=50
     )
 
