@@ -22,11 +22,19 @@ class Vec3(np.ndarray):
             return on_unit_sphere
         else:
             return -on_unit_sphere
+
     def near_zero(self):
         return np.all(self < 1e-8)
 
     def reflect(self, n):
         return self - 2 * np.dot(self, n) * n
+
+    @classmethod
+    def random_in_unit_disk(cls):
+        while True:
+            p = Vec3([np.random.uniform(-1, 1), np.random.uniform(-1, 1), 0])
+            if np.linalg.norm(p) < 1:
+                return p
 
     @classmethod
     def random(cls, min=0, max=1):

@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from hittable import HitRecord
 from interval import Interval
@@ -11,8 +13,18 @@ from multiprocessing import cpu_count
 
 unit_vector = lambda v: v / np.linalg.norm(v)
 
+
 class Camera:
-    def __init__(self, image_width=100, aspect_ratio=1.0, samples_per_pixel=10, max_depth=10):
+    def __init__(self,
+                 image_width=100,
+                 aspect_ratio=1.0,
+                 samples_per_pixel=10,
+                 max_depth=10, vfov=90,
+                 lookfrom=Vec3([0, 0, 0]),
+                 lookat=Vec3([0, 0, -1]),
+                 vup=Vec3([0, 1, 0]),
+                 defocus_angle=0,
+                 focus_dist=10):
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
         self._samples_per_pixel = samples_per_pixel
@@ -23,6 +35,17 @@ class Camera:
         self._pixel_delta_u = None
         self._pixel_delta_v = None
         self._pixel_samples_scale = None
+        self._vfov = vfov
+        self._lookfrom = lookfrom
+        self._lookat = lookat
+        self._vup = vup
+        self._u = None
+        self._v = None
+        self._w = None
+        self._defocus_angle = defocus_angle
+        self._focus_dist = focus_dist
+        self._defocus_disk_u = None
+        self._defocus_disk_v = None
 
     def _process_row(self, j, world):
         pixel_color = np.zeros((self._image_width, 3))
@@ -48,7 +71,7 @@ class Camera:
                 image[:, j] = row_colors
                 num_done += 1
 
-                print(f"{num_done}/{total_rows} rows processed (%{int(num_done/total_rows*100)})")
+                print(f"{num_done}/{total_rows} rows processed (%{int(num_done / total_rows * 100)})")
 
         # for j in range(self._image_height):
         #     print(f"%{j/self._image_height*100}")
@@ -62,7 +85,6 @@ class Camera:
 
         return image
 
-
     def _get_ray(self, i, j):
         offset = Vec3([np.random.rand() - 0.5, np.random.rand() - 0.5, 0.0])
         pixel_sample = (
@@ -70,9 +92,13 @@ class Camera:
                 ((i + offset[0]) * self._pixel_delta_u) +
                 ((j + offset[1]) * self._pixel_delta_v)
         )
-        ray_origin = self._center
+        ray_origin = (self._defocus_angle <= 0) if self._center else self._defocus_disk_sample()
         ray_direction = pixel_sample - ray_origin
         return Ray(ray_origin, ray_direction)
+
+    def _defocus_disk_sample(self):
+        p = Vec3.random_in_unit_disk()
+        return self._center + (p[0] * self._defocus_disk_u) + (p[1] * self._defocus_disk_v)
 
     def _initialize(self):
         self._image_height = int(self._image_width / self._aspect_ratio)
@@ -80,25 +106,35 @@ class Camera:
 
         self._pixel_samples_scale = 1.0 / self._samples_per_pixel
 
-        focal_length = 1
-        viewport_height = 2
-        viewport_width = viewport_height * (self._image_width / self._image_height)
-        self._center = Vec3([0, 0, 0], np.double)
+        self._center = self._lookfrom
 
-        viewport_u = Vec3([viewport_width, 0, 0], np.double)
-        viewport_v = Vec3([0, -viewport_height, 0], np.double)
+        theta = np.deg2rad(self._vfov)
+        h = math.tan(theta / 2)
+        viewport_height = 2 * h * self._focus_dist
+        viewport_width = viewport_height * (self._image_width / self._image_height)
+
+        self._w = Vec3.as_unit_vector(self._lookfrom - self._lookat)
+        self._u = Vec3.as_unit_vector(np.cross(self._vup, self._w))
+        self._v = np.cross(self._w, self._u)
+
+        viewport_u = viewport_width * self._u
+        viewport_v = viewport_height * (-self._v)
 
         self._pixel_delta_u = viewport_u / self._image_width
         self._pixel_delta_v = viewport_v / self._image_height
 
         viewport_upper_left = (
                 self._center -
-                Vec3([0, 0, focal_length], np.double) -
+                (self._focus_dist * self._w) -
                 viewport_u / 2 -
                 viewport_v / 2
         )
 
         self._pixel00_loc = viewport_upper_left + 0.5 * (self._pixel_delta_u + self._pixel_delta_v)
+
+        defocus_radius = self._focus_dist * math.tan(np.deg2rad(self._defocus_angle / 2))
+        self._defocus_disk_u = self._u * defocus_radius
+        self._defocus_disk_v = self._v * defocus_radius
 
     def _ray_color(self, ray, depth, world):
         if depth <= 0:

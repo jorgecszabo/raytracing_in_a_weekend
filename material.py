@@ -11,7 +11,6 @@ class Material(ABC):
         return False, None, None
 
 class Lambertian(Material):
-
     def scatter(self, hit_ray, hit_record):
         scatter_direction = hit_record.normal + Vec3.random_unit_vector()
 
