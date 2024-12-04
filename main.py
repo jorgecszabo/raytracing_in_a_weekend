@@ -81,7 +81,7 @@ def main():
     #small spheres on the ground
     p1 = Vec3([0.0, 1.2, 1.9])
     p2 = Vec3([4.8, 1.0, 0.0])
-    r1 = 1.1
+    r1 = 1.4
     r2 = 1.1
 
     for a in range(-11, 11, 1):
@@ -105,7 +105,7 @@ def main():
     camera = Camera(
         image_width=150,
         aspect_ratio=16.0 / 9.0,
-        samples_per_pixel=5,
+        samples_per_pixel=10,
         max_depth=5,
 
         vfov=22,
@@ -113,7 +113,7 @@ def main():
         lookat=Vec3([0,0.35,-0.25]),
         vup=Vec3([0.0,1.0,0.0]),
 
-        defocus_angle=0.6,
+        defocus_angle=0.8,
         focus_dist=10.0
     )
 
