@@ -1,5 +1,4 @@
 import numpy as np
-from sphere import Sphere
 
 class Vec3(np.ndarray):
     def __new__(cls, input_array, *args, **kwargs):
@@ -28,6 +27,12 @@ class Vec3(np.ndarray):
 
     def reflect(self, n):
         return self - 2 * np.dot(self, n) * n
+
+    def refract(self, n, etai_over_etat):
+        cos_theta = min(np.dot(-self, n), 1.0)
+        r_out_prep = etai_over_etat * (self + cos_theta * n)
+        r_out_parallel = -np.sqrt(abs(1.0 - (r_out_prep @ r_out_prep))) * n
+        return r_out_prep + r_out_parallel
 
     @classmethod
     def random_in_unit_disk(cls):

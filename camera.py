@@ -85,6 +85,21 @@ class Camera:
 
         return image
 
+    def render_single_thread(self, world):
+        self._initialize()
+        image = np.zeros((self._image_width, self._image_height, 3))
+
+        total_rows = self._image_height
+        num_done = 0
+        for j in range(total_rows):
+            j, row_colors = self._process_row(j, world)
+            image[:, j] = row_colors
+            num_done += 1
+
+            print(f"{num_done}/{total_rows} rows processed (%{int(num_done / total_rows * 100)})")
+
+        return image
+
     def _get_ray(self, i, j):
         offset = Vec3([np.random.rand() - 0.5, np.random.rand() - 0.5, 0.0])
         pixel_sample = (
@@ -148,7 +163,7 @@ class Camera:
             if did_scatter:
                 return attenuation * self._ray_color(scattered, depth - 1, world)
             else:
-                Vec3([0.0, 0.0, 0.0])
+                return Vec3([0.0, 0.0, 0.0])
         else:
             unit_direction = unit_vector(ray.direction)
             a = 0.5 * (unit_direction[1] + 1.0)
