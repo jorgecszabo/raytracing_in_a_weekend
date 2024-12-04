@@ -8,39 +8,26 @@ from material import Lambertian, Metal
 import time
 import numpy as np
 
-def sierpinski_pyramid(center, radius, depth):
-    # List to hold the spheres (center, radius)
-    spheres = []
-
-    # Base case: if depth is 0, stop recursion and return a single sphere
+def sierpinski_triangle(center, radius, depth):
     if depth == 0:
-        spheres.append((center, radius))
-        return spheres
+        return [(center, radius)]
 
-    # Add the current sphere at the given center and radius
-    spheres.append((center, radius))
+    spheres = [(center, radius)]
 
-    # Calculate new radius for next spheres
-    new_radius = radius / 2
-
-    offset = radius
-    # Directions for the 4 spheres around the current one
     directions = [
-        [0, 0, offset],                    # Top
-        [offset, offset, -offset],         # Bottom-right-front
-        [-offset, offset, -offset],        # Bottom-left-front
-        [0, -offset, -offset],             # Bottom-back
+        np.array([1, 1, 1]),
+        np.array([1, -1, -1]),
+        np.array([-1, 1, -1]),
+        np.array([-1, -1, 1])
     ]
 
-    # Create the 4 new spheres recursively
+    directions = [point / np.linalg.norm(point) * radius for point in directions]
+
     for direction in directions:
-        new_center = [center[0] + direction[0], center[1] + direction[1], center[2] + direction[2]]
-        spheres.extend(sierpinski_pyramid(new_center, new_radius, depth - 1))
+        new_center = center + direction
+        spheres.extend(sierpinski_triangle(new_center, radius / 2, depth - 1))
 
     return spheres
-
-
-
 
 def generate_spiral_points_on_sphere(center, radius, num_points):
     points = []
@@ -70,64 +57,64 @@ def assign_material():
 
 def main():
     #ground
-    # world = HittableList()
-    # material_ground = Metal(Vec3([0.95, 0.95, 0.96]))
-    # world.add(Sphere(Vec3([0.0, -1000.5, -1.0]), 1000.0, material_ground))
+    world = HittableList()
+    material_ground = Lambertian(Vec3([0.95, 0.95, 0.95]))
+    world.add(Sphere(Vec3([0.0, -1000, -1.0]), 1000.0, material_ground))
 
     #Big sphere with smaller spheres around it
-    # center = Vec3([0.0, 0.0, -1.5])
-    # world.add(Sphere(center, 0.8, Metal(Vec3([0.8, 0.81, 0.8]))))
-    # points = generate_spiral_points_on_sphere(center, 0.95, 50)
-    # for point in points:
-    #     material = assign_material()
-    #     world.add(Sphere(point, 0.1, material))
+    center = Vec3([0.0, 1.2, 1.9])
+    world.add(Sphere(center, 0.5, Metal(Vec3([0.8, 0.81, 0.8]))))
+    points = generate_spiral_points_on_sphere(center, 1.0, 30)
+    for point in points:
+        material = assign_material()
+        world.add(Sphere(point, 0.2, material))
 
     # sierpinski pyramid out of spheres
-    # center = Vec3([0.0, 1.0, -5.5])
-    # spheres = sierpinski_pyramid(center, 2, 2)
-    #
-    # for sphere in spheres:
-    #     material = assign_material()
-    #     world.add(Sphere(Vec3(sphere[0]), sphere[1], material))
+    center = Vec3([4.8, 1.0, 0.0])
+    spheres = sierpinski_triangle(center, 1.0, 4)
+
+    for sphere in spheres:
+        # material = assign_material()
+        material = Metal(Vec3([0.96, 0.93, 0.97]))
+        world.add(Sphere(Vec3(sphere[0]), sphere[1], material))
 
     #small spheres on the ground
-    # for a in range(-8, 8, 1):
-    #     for b in range(-8, 8, 1):
-    #         mat = assign_material()
-    #         center = Vec3([
-    #             a + 0.9 * np.random.rand(),
-    #             -1.0,
-    #             b + 0.9 * np.random.rand()
-    #         ])
-    #         radius = np.random.uniform(0.1, 0.3)
-    #         world.add(Sphere(center, radius, mat))
+    p1 = Vec3([0.0, 1.2, 1.9])
+    p2 = Vec3([4.8, 1.0, 0.0])
+    r1 = 1.1
+    r2 = 1.1
 
+    for a in range(-11, 11, 1):
+        for b in range(-11, 11, 1):
+            mat = assign_material()
+            radius = np.random.uniform(0.1, 0.3)
+            center = Vec3([
+                a + 0.9 * np.random.rand(),
+                radius,
+                b + 0.9 * np.random.rand()
+            ])
 
-    material_ground = Lambertian(Vec3([0.8, 0.8, 0.0]))
-    material_center = Lambertian(Vec3([0.1, 0.2, 0.5]))
-    material_left = Metal(Vec3([0.9, 0.9, 0.9]))
-    material_right = Metal(Vec3([0.8, 0.6, 0.2]))
+            dist_p1 = np.linalg.norm(center - p1)
+            dist_p2 = np.linalg.norm(center - p2)
 
-    world = HittableList()
-    world.add(Sphere(Vec3([0.0, -100.5, -1.0]), 100.0, material_ground))
-    world.add(Sphere(Vec3([0.0, 0.0, -1.2]), 0.5, material_center))
-    world.add(Sphere(Vec3([-1.0, 0.0, -1.0]), 0.5, material_left))
-    world.add(Sphere(Vec3([1.0, 0.0, -1.0]), 0.5, material_right))
+            if dist_p1 < r1 or dist_p2 < r2:
+                continue
+
+            world.add(Sphere(center, radius, mat))
 
     camera = Camera(
-        image_width=300,
+        image_width=150,
         aspect_ratio=16.0 / 9.0,
-        # aspect_ratio=4.0 / 3.0,
-        samples_per_pixel=10,
-        max_depth=10,
+        samples_per_pixel=5,
+        max_depth=5,
 
-        vfov=20,
-        lookfrom=Vec3([-2.0,2.0,1.0]),
-        lookat=Vec3([0,0.0,-1.0]),
+        vfov=22,
+        lookfrom=Vec3([13.0,2.0,3.0]),
+        lookat=Vec3([0,0.35,-0.25]),
         vup=Vec3([0.0,1.0,0.0]),
 
-        defocus_angle=10.0,
-        focus_dist=3.4
+        defocus_angle=0.6,
+        focus_dist=10.0
     )
 
     t0 = time.monotonic()
