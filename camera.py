@@ -92,7 +92,9 @@ class Camera:
                 ((i + offset[0]) * self._pixel_delta_u) +
                 ((j + offset[1]) * self._pixel_delta_v)
         )
-        ray_origin = (self._defocus_angle <= 0) if self._center else self._defocus_disk_sample()
+
+        ray_origin = self._center if self._defocus_angle <= 0 else self._defocus_disk_sample()
+
         ray_direction = pixel_sample - ray_origin
         return Ray(ray_origin, ray_direction)
 

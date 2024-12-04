@@ -72,7 +72,7 @@ def main():
     #ground
     # world = HittableList()
     # material_ground = Metal(Vec3([0.95, 0.95, 0.96]))
-    # world.add(Sphere(Vec3([0.0, -1001.0, -1.0]), 1000.0, material_ground))
+    # world.add(Sphere(Vec3([0.0, -1000.5, -1.0]), 1000.0, material_ground))
 
     #Big sphere with smaller spheres around it
     # center = Vec3([0.0, 0.0, -1.5])
