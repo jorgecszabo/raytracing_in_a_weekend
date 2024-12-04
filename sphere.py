@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from hittable import Hittable
 
 
@@ -16,7 +17,7 @@ def hit_sphere(center, radius, ray):
     if discriminant < 0:
         raise DoesNotHitSpere
     else:
-        return (-b - np.sqrt(discriminant)) / (2.0 * a)
+        return (-b - math.sqrt(discriminant)) / (2.0 * a)
 
 class Sphere(Hittable):
     def __init__(self, center, radius, material):
@@ -34,7 +35,7 @@ class Sphere(Hittable):
         if discriminant < 0:
             return False, hit_record
 
-        discriminant_sqrt = np.sqrt(discriminant)
+        discriminant_sqrt = math.sqrt(discriminant)
         root = (h - discriminant_sqrt) / a
         if not ray_interval.surrounds(root):
             root = (h + discriminant_sqrt) / a

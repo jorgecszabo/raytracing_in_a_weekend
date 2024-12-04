@@ -4,7 +4,7 @@ from hittable import HittableList
 from sphere import Sphere
 from camera import Camera
 from vec3 import Vec3
-from material import Lambertian, Metal
+from material import Lambertian, Metal, Dielectric
 import time
 import numpy as np
 
@@ -31,11 +31,11 @@ def sierpinski_triangle(center, radius, depth):
 
 def generate_spiral_points_on_sphere(center, radius, num_points):
     points = []
-    phi = np.pi * (3.0 - np.sqrt(5.0))
+    phi = np.pi * (3.0 - math.sqrt(5.0))
 
     for i in range(num_points):
         y = 1 - (i / float(num_points - 1)) * 2
-        radius_at_y = np.sqrt(1 - y ** 2)
+        radius_at_y = math.sqrt(1 - y ** 2)
         theta = phi * i
         x = radius_at_y * np.cos(theta)
         z = radius_at_y * np.sin(theta)
@@ -51,7 +51,7 @@ def assign_material():
         material_lambertian = Lambertian(pastel)
         return material_lambertian
     else:
-        material_metal = Metal(pastel)
+        material_metal = Metal(pastel, 0.3)
         return material_metal
 
 
@@ -63,7 +63,7 @@ def main():
 
     #Big sphere with smaller spheres around it
     center = Vec3([0.0, 1.2, 1.9])
-    world.add(Sphere(center, 0.5, Metal(Vec3([0.8, 0.81, 0.8]))))
+    world.add(Sphere(center, 0.5, Dielectric(1.00 / 1.33)))
     points = generate_spiral_points_on_sphere(center, 1.0, 30)
     for point in points:
         material = assign_material()
@@ -75,7 +75,7 @@ def main():
 
     for sphere in spheres:
         # material = assign_material()
-        material = Metal(Vec3([0.96, 0.93, 0.97]))
+        material = Metal(Vec3([0.96, 0.93, 0.97]), 1.0)
         world.add(Sphere(Vec3(sphere[0]), sphere[1], material))
 
     #small spheres on the ground
@@ -103,10 +103,10 @@ def main():
             world.add(Sphere(center, radius, mat))
 
     camera = Camera(
-        image_width=150,
+        image_width=800,
         aspect_ratio=16.0 / 9.0,
-        samples_per_pixel=10,
-        max_depth=5,
+        samples_per_pixel=20,
+        max_depth=10,
 
         vfov=22,
         lookfrom=Vec3([13.0,2.0,3.0]),

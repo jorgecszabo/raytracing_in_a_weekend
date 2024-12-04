@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 class Vec3(np.ndarray):
     def __new__(cls, input_array, *args, **kwargs):
@@ -31,7 +32,7 @@ class Vec3(np.ndarray):
     def refract(self, n, etai_over_etat):
         cos_theta = min(np.dot(-self, n), 1.0)
         r_out_prep = etai_over_etat * (self + cos_theta * n)
-        r_out_parallel = -np.sqrt(abs(1.0 - (r_out_prep @ r_out_prep))) * n
+        r_out_parallel = -math.sqrt(abs(1.0 - (r_out_prep @ r_out_prep))) * n
         return r_out_prep + r_out_parallel
 
     @classmethod
@@ -50,4 +51,4 @@ class Vec3(np.ndarray):
             p = cls.random()
             lensq = p @ p
             if 1e-160 < lensq <= 1:
-                return p / np.sqrt(lensq)
+                return p / math.sqrt(lensq)

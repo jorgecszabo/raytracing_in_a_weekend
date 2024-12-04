@@ -1,10 +1,7 @@
 import math
-
 import numpy as np
 from hittable import HitRecord
 from interval import Interval
-from hittable import HittableList
-from sphere import Sphere
 from ray import Ray
 from color import write_color
 from vec3 import Vec3

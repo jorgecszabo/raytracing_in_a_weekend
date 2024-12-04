@@ -46,7 +46,7 @@ class Dielectric(Material):
 
         unit_direction = hit_ray.direction.as_unit_vector()
         cos_theta = min(np.dot(-unit_direction, hit_record.normal), 1.0)
-        sin_theta = np.sqrt(1.0 - cos_theta * cos_theta)
+        sin_theta = math.sqrt(1.0 - cos_theta * cos_theta)
 
         cannot_refract = refraction_index * sin_theta > 1.0
         if cannot_refract or self._reflectance(cos_theta, refraction_index) > np.random.random():
