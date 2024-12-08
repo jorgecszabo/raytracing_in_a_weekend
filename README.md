@@ -5,6 +5,8 @@ Para correr el TP: `python main.py --scene ESCENA` con `ESCENA`:
 -  `escena_simple` para renderizar una escena simple que tarda al rededor de 3 minutos en una CPU de 6 cores.
 
 Opcionalmente se puede usar el argumento `--max-cpus N_PROC` para seleccionar la cantidad máxima de filas que se procesan en simultáneo. Si no se específica procesa tantas filas como tenga threads lógicos disponibles el procesador.
+
+La imagen final se guarda en el directorio actual como `output.png`, además se abre una ventana de OpenCV para visualizar la imagen renerizada.
   
 # Requisitos (Python):  
 - OpenCV  
